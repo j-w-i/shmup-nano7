@@ -1,0 +1,3 @@
+#ifndef SHMUP_OPENGLES_ES2_GLEXT_H
+#define SHMUP_OPENGLES_ES2_GLEXT_H
+#endif
