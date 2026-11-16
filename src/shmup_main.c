@@ -63,10 +63,10 @@ static void poll_touch_input(int *home_pressed) {
         io_event_s ev = { { (float)in.x, (float)in.y }, { (float)in.x, (float)in.y }, IO_EVENT_BEGAN };
         IO_PushEvent(&ev);
     } else if (in.moved) {
-        io_event_s ev = { { (float)in.x, (float)in.y }, { (float)in.x, (float)in.y }, IO_EVENT_MOVED };
+        io_event_s ev = { { (float)in.x, (float)in.y }, { (float)in.prev_x, (float)in.prev_y }, IO_EVENT_MOVED };
         IO_PushEvent(&ev);
     } else if (in.released) {
-        io_event_s ev = { { (float)in.x, (float)in.y }, { (float)in.x, (float)in.y }, IO_EVENT_ENDED };
+        io_event_s ev = { { (float)in.x, (float)in.y }, { (float)in.prev_x, (float)in.prev_y }, IO_EVENT_ENDED };
         IO_PushEvent(&ev);
     }
 }
