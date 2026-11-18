@@ -75,10 +75,10 @@ void SCR_SetFadeScreenCoo(vec2short_t upperLeft, vec2short_t upperRight, vec2sho
 
 void SCR_SetFadeFullScreen(void)
 {
-	vec2short_t upperLeft  = {- SS_W,   SS_H};
-	vec2short_t upperRight = {  SS_W,   SS_H};
-	vec2short_t lowerRight = {  SS_W, - SS_H};
-	vec2short_t lowerLeft  = {- SS_W, - SS_H};
+	vec2short_t upperLeft  = {- SS_W,   SS_SCREEN_TOP};
+	vec2short_t upperRight = {  SS_W,   SS_SCREEN_TOP};
+	vec2short_t lowerRight = {  SS_W, - SS_SCREEN_TOP};
+	vec2short_t lowerLeft  = {- SS_W, - SS_SCREEN_TOP};
 	
 	SCR_SetFadeScreenCoo(upperLeft,upperRight,lowerRight,lowerLeft);
 }
@@ -116,6 +116,12 @@ void SRC_CalcViewPortDimensions(void)
 	//Center the active surface (defined by the viewport width and height) on the screen.
 	renderer.viewPortDimensions[VP_X] = (renderer.glBuffersDimensions[WIDTH] - renderer.viewPortDimensions[VP_WIDTH]) / 2;
 	renderer.viewPortDimensions[VP_Y] = (renderer.glBuffersDimensions[HEIGHT] - renderer.viewPortDimensions[VP_HEIGHT]) / 2;
+	
+	renderer.ss_extentY = 1.0f;
+#ifndef SHMUP_LETTERBOX_3D
+	if (renderer.viewPortDimensions[VP_HEIGHT] > 0 && renderer.viewPortDimensions[VP_HEIGHT] < renderer.glBuffersDimensions[HEIGHT])
+		renderer.ss_extentY = renderer.glBuffersDimensions[HEIGHT] / (float)renderer.viewPortDimensions[VP_HEIGHT];
+#endif
     
     /*
     Log_Printf("Viewport[x,y,width,height]=[%d,%d,%d,%d]\n",

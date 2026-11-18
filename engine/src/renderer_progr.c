@@ -519,10 +519,18 @@ void SRC_BindUberShader(uchar props)
 	
 
 	
-		//Setup light
-		if ((int)currentShader->vars[SHADER_UNI_LIGHT_COL_AMBIENT] >= 0) glUniform3fv(currentShader->vars[SHADER_UNI_LIGHT_COL_AMBIENT],1,light.ambient);
-		if ((int)currentShader->vars[SHADER_UNI_LIGHT_COL_DIFFUSE] >= 0) glUniform3fv(currentShader->vars[SHADER_UNI_LIGHT_COL_DIFFUSE],1,light.diffuse);
-		if ((int)currentShader->vars[SHADER_UNI_LIGHT_COL_SPECULAR] >= 0) glUniform3fv(currentShader->vars[SHADER_UNI_LIGHT_COL_SPECULAR],1,light.specula);
+		//Setup light. A scene with "light { enabled 0 }" (all shipped scenes) is drawn
+		//unlit by the fixed-function renderer: texture only. Match that here (full
+		//ambient, no diffuse/specular) instead of lighting it with a zero ambient term.
+		{
+			static const float unlitAmbient[3] = {1.0f, 1.0f, 1.0f}, none[3] = {0.0f, 0.0f, 0.0f};
+			const float *amb = light.enabled ? light.ambient : unlitAmbient;
+			const float *dif = light.enabled ? light.diffuse : none;
+			const float *spe = light.enabled ? light.specula : none;
+			if ((int)currentShader->vars[SHADER_UNI_LIGHT_COL_AMBIENT] >= 0) glUniform3fv(currentShader->vars[SHADER_UNI_LIGHT_COL_AMBIENT],1,amb);
+			if ((int)currentShader->vars[SHADER_UNI_LIGHT_COL_DIFFUSE] >= 0) glUniform3fv(currentShader->vars[SHADER_UNI_LIGHT_COL_DIFFUSE],1,dif);
+			if ((int)currentShader->vars[SHADER_UNI_LIGHT_COL_SPECULAR] >= 0) glUniform3fv(currentShader->vars[SHADER_UNI_LIGHT_COL_SPECULAR],1,spe);
+		}
 	}
 }
 
@@ -962,6 +970,18 @@ void SetupCamera(void)
 	
 	gluPerspective(camera.fov, camera.aspect,camera.zNear, camera.zFar, projectionMatrix);
 	
+#ifndef SHMUP_LETTERBOX_3D
+	/* iPod nano: the game frame is 320:480, the screen taller (240x432). The 2D layer keeps the
+	 * letterboxed viewport; the 3D world fills the whole screen. Drawing into the full-height
+	 * viewport with the clip-space y scale reduced by (letterbox height / screen height) puts
+	 * the original view on the same pixels and shows more world above and below. The camera
+	 * paths' visibility sets are re-baked for this taller view (tools/bake_vis, same fov rule). */
+	if (renderer.viewPortDimensions[VP_HEIGHT] < renderer.glBuffersDimensions[HEIGHT])
+	{
+		projectionMatrix[5] *= renderer.viewPortDimensions[VP_HEIGHT] / (float)renderer.glBuffersDimensions[HEIGHT];
+		glViewport(0, 0, renderer.glBuffersDimensions[WIDTH], renderer.glBuffersDimensions[HEIGHT]);
+	}
+#endif
 }
 
 
@@ -1096,6 +1116,12 @@ void SetupLighting(void)
 
 void Set2D(void)
 {
+#ifndef SHMUP_LETTERBOX_3D
+	/* The 2D layer also covers the whole screen: same y squeeze as the 3D projection, so
+	 * +-SS_H lands on the old letterbox pixels and lasers, bullets and fades carry on into
+	 * the extra space above and below (see renderer.ss_extentY). */
+	glViewport(0, 0, renderer.glBuffersDimensions[WIDTH], renderer.glBuffersDimensions[HEIGHT]);
+#endif
 	
 	float t1,t2,t3;
 	
@@ -1110,7 +1136,7 @@ void Set2D(void)
 	t3 = -(1 +  -1)/(1 - -1);
 	
 	modelViewProjectionMatrix[0] = 2.0f/ (SS_W - - SS_W )	; modelViewProjectionMatrix[4] = 0								; modelViewProjectionMatrix[8] = 0			; modelViewProjectionMatrix[12] =t1 ;
-	modelViewProjectionMatrix[1] = 0								; modelViewProjectionMatrix[5] = 2.0f/(SS_H - -SS_H); modelViewProjectionMatrix[9] = 0			; modelViewProjectionMatrix[13] = t2 ;
+	modelViewProjectionMatrix[1] = 0								; modelViewProjectionMatrix[5] = 2.0f/((SS_H - -SS_H)*renderer.ss_extentY); modelViewProjectionMatrix[9] = 0			; modelViewProjectionMatrix[13] = t2 ;
 	modelViewProjectionMatrix[2] = 0								; modelViewProjectionMatrix[6] = 0									; modelViewProjectionMatrix[10] = -2.0f/(1 - -1); modelViewProjectionMatrix[14] = t3;
 	modelViewProjectionMatrix[3] = 0								; modelViewProjectionMatrix[7] = 0									; modelViewProjectionMatrix[11] = 0			; modelViewProjectionMatrix[15] = 1  ;	
 	

@@ -181,12 +181,19 @@ void TITLE_Clear(void){
     title_mode = MODE_UNKNOWN;
 }
 
+/* The title band's top edge sits on the real screen top (taller screens show more than 320:480). */
+static void TITLE_SetBand(void)
+{
+	upperLeft[Y] = upperRight[Y] = SS_SCREEN_TOP;
+	SCR_SetFadeScreenCoo(upperLeft,upperRight,lowerRight,lowerLeft);
+}
+
 void TITLE_Show_prolog(int tr)
 {
 	timeRemaining =  tr;
 	initTimeRemaining = tr;
 	title_mode = MODE_PROLOG;
-	SCR_SetFadeScreenCoo(upperLeft,upperRight,lowerRight,lowerLeft);
+	TITLE_SetBand();
 	entitiesAttachedToCamera = 0;
 }
 
@@ -195,7 +202,7 @@ void TITLE_Show_epilog(int tr)
 	timeRemaining =  tr;
 	initTimeRemaining = tr;
 	title_mode = MODE_EPILOG;
-	SCR_SetFadeScreenCoo(upperLeft,upperRight,lowerRight,lowerLeft);
+	TITLE_SetBand();
 }
 
 void TITLE_RenderCompletedTitle(void)

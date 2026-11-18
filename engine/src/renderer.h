@@ -88,6 +88,11 @@ typedef struct renderer_t
 	
 	int glBuffersDimensions[2];
 	
+	/* How far the screen reaches past the 320:480 frame, vertically: screen height / letterbox
+	 * height (1 when the frame fills the screen or SHMUP_LETTERBOX_3D is set). The 2D layer
+	 * spans y = +-SS_H*ss_extentY, so +-SS_H keeps its original pixels. */
+	float ss_extentY;
+	
 	
 	uint type;
 	
@@ -163,6 +168,9 @@ void SCR_SetFadeScreenCoo(vec2short_t upperLeft, vec2short_t upperRight, vec2sho
 void SCR_SetFadeFullScreen(void);	 
 	 
 void SCR_StartConvertText(void);	 
+/* Top edge of the visible screen in 2D coordinates (SS_H on a 320:480 screen). */
+#define SS_SCREEN_TOP ((short)(SS_H*renderer.ss_extentY))
+
 void SCR_ConvertTextToVertices(const char* string, float size, short ss_cooX, short ss_cooY, uchar centered);
 void SCR_RenderText(void);	 
 	 

@@ -265,7 +265,7 @@ void P_ResetPlayers(void)
 
 
 #define SCORE_POS_X -300
-#define SCORE_POS_Y 460
+#define SCORE_POS_Y (SS_SCREEN_TOP-20)	/* 460 on a 320:480 screen; pinned to the real top edge */
 #define SCORE_FONT_SIZE 2.7f
 #define SCORE_FORMAT "SCORE:%7u"
 void P_InitPlayers(void)
